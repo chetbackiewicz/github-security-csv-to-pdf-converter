@@ -1,59 +1,145 @@
-# Docker Setup for GHAS Report Application
+# GitHub Advanced Security CSV to PDF Converter
 
-This document provides instructions for building and running the GHAS CSV Converter application using Docker.
+A web application that converts GitHub Advanced Security CSV exports into professional PDF reports. Easily transform your organization's security data into shareable, presentation-ready documents.
 
-## Prerequisites
+## Features
 
-- Docker installed on your machine
-- Docker Compose installed on your machine (optional, but recommended)
+- Import GitHub Advanced Security CSV reports from organization level exports
+- Generate professional PDF reports including:
+  - Organization summary
+  - Executive overview of security alerts
+  - Breakdown by alert type (Code Scanning, Dependabot, Secret Scanning)
+  - Severity distribution visualizations
+  - Repository-specific alert statistics
+- Modern, clean user interface
+- Local processing (no data is sent to external servers)
+- Docker support for easy deployment
 
-## Building and Running with Docker Compose (Recommended)
+## Getting Started
 
-The simplest way to get started is to use Docker Compose:
+### Prerequisites
+
+To run the application locally, you'll need:
+
+- Node.js (version 16 or later)
+- npm or yarn package manager
+
+For Docker deployment:
+- Docker
+- Docker Compose (optional, but recommended)
+
+### Local Installation and Setup
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/chetbackiewicz/github-security-csv-to-pdf-converter.git
+   cd github-security-csv-to-pdf-converter
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+
+3. Start the development server
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:5173` (or the URL shown in your terminal)
+
+### Building for Production
+
+To create a production build:
 
 ```bash
-# Build and start the container
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop the container
-docker-compose down
+npm run build
 ```
 
-The application will be available at http://localhost:8080
+The built files will be in the `dist` directory and can be served with any static file server.
 
-## Building and Running with Docker
+## Docker Deployment
 
-If you prefer to use Docker commands directly:
+### Using Docker Compose (Recommended)
 
-```bash
-# Build the Docker image
-docker build -t ghas-report .
+1. Clone the repository
+   ```bash
+   git clone https://github.com/chetbackiewicz/github-security-csv-to-pdf-converter.git
+   cd github-security-csv-to-pdf-converter
+   ```
 
-# Run the container
-docker run -d -p 8080:80 --name ghas-report-container ghas-report
+2. Build and start the container
+   ```bash
+   docker-compose up -d
+   ```
 
-# Stop the container
-docker stop ghas-report-container
+3. Access the application at `http://localhost:8080`
 
-# Remove the container
-docker rm ghas-report-container
-```
+4. To stop the application
+   ```bash
+   docker-compose down
+   ```
 
-The application will be available at http://localhost:8080
+### Using Docker Directly
 
-## Configuration
+1. Build the Docker image
+   ```bash
+   docker build -t ghas-report .
+   ```
 
-- The application is served on port 80 inside the container
-- The docker-compose.yml file maps port 80 to port 8080 on your host machine
-- If you need to change this port mapping, edit the `ports` section in docker-compose.yml
+2. Run the container
+   ```bash
+   docker run -d -p 8080:80 --name ghas-report-container ghas-report
+   ```
 
+3. Access the application at `http://localhost:8080`
 
-## Using the Application
-- Go to your organization in Github
-- In the Security Tab, in the Overview section, you should see an "Export CSV" button
-- Click the button to download your CSV Report
-- Within this application, click the "Upload CSV File"
-- Once converted, click the "Download PDF Report"
+4. To stop and remove the container
+   ```bash
+   docker stop ghas-report-container
+   docker rm ghas-report-container
+   ```
+
+## How to Use
+
+### Exporting CSV from GitHub Advanced Security
+
+1. Navigate to your GitHub organization page
+2. Select the "Security" tab
+3. In the Security Overview section, click on the "Export CSV" button
+4. Save the CSV file to your computer
+
+### Converting CSV to PDF
+
+1. Open the application in your browser
+2. Click the "Upload CSV File" button
+3. Select the CSV file you downloaded from GitHub
+4. Once processed, click the "Download PDF Report" button
+5. Save the generated PDF to your preferred location
+
+### PDF Report Contents
+
+The generated PDF includes:
+- Organization identification and report generation timestamp
+- Executive summary of all security alerts
+- Code scanning alerts breakdown by severity
+- Dependabot alerts breakdown by severity
+- Secret scanning alerts by type
+- Repository-specific alert distributions
+
+## Technology Stack
+
+- React
+- TypeScript
+- Vite
+- Material UI
+- react-pdf for PDF generation
+- Docker & Nginx for containerized deployment
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
