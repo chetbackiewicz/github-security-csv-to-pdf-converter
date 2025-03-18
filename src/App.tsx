@@ -74,7 +74,7 @@ function App() {
           <Box sx={{ my: 3 }}>
             <PDFDownloadLink
               document={<SecurityReport data={reportData} />}
-              fileName={`${reportData.repository}-security-report.pdf`}
+              fileName={`${reportData.organization}-security-report.pdf`}
             >
               {({ loading: pdfLoading }) => (
                 <Button

@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Image, Svg, Circle, Path } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, Svg, Path } from '@react-pdf/renderer';
 import { ReportData, SeverityCount, RepositoryBreakdown } from '../types';
 import githubLogo from '../assets/github-mark.svg';
 
@@ -86,7 +86,6 @@ const PieChart = ({ data }: { data: SeverityCount }) => {
     const angle = percentage * 360;
     const largeArcFlag = angle > 180 ? 1 : 0;
     
-    // Calculate start and end points
     const startX = Math.cos((currentAngle * Math.PI) / 180) * 75 + 75;
     const startY = Math.sin((currentAngle * Math.PI) / 180) * 75 + 75;
     const endX = Math.cos(((currentAngle + angle) * Math.PI) / 180) * 75 + 75;

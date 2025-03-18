@@ -1,50 +1,59 @@
-# React + TypeScript + Vite
+# Docker Setup for GHAS Report Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This document provides instructions for building and running the GHAS CSV Converter application using Docker.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Docker installed on your machine
+- Docker Compose installed on your machine (optional, but recommended)
 
-## Expanding the ESLint configuration
+## Building and Running with Docker Compose (Recommended)
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+The simplest way to get started is to use Docker Compose:
 
-- Configure the top-level `parserOptions` property like this:
+```bash
+# Build and start the container
+docker-compose up -d
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+The application will be available at http://localhost:8080
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Building and Running with Docker
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+If you prefer to use Docker commands directly:
+
+```bash
+# Build the Docker image
+docker build -t ghas-report .
+
+# Run the container
+docker run -d -p 8080:80 --name ghas-report-container ghas-report
+
+# Stop the container
+docker stop ghas-report-container
+
+# Remove the container
+docker rm ghas-report-container
 ```
+
+The application will be available at http://localhost:8080
+
+## Configuration
+
+- The application is served on port 80 inside the container
+- The docker-compose.yml file maps port 80 to port 8080 on your host machine
+- If you need to change this port mapping, edit the `ports` section in docker-compose.yml
+
+
+## Using the Application
+- Go to your organization in Github
+- In the Security Tab, in the Overview section, you should see an "Export CSV" button
+- Click the button to download your CSV Report
+- Within this application, click the "Upload CSV File"
+- Once converted, click the "Download PDF Report"
