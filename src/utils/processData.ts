@@ -72,25 +72,25 @@ export const processCSVData = (file: File): Promise<ReportData> => {
 
             switch (alert.Tool.toLowerCase()) {
               case 'codeql':
-                totalCodeScanning++;
-                codeScanningAlerts[mappedSeverity]++;
-                updateRepoBreakdown(codeScanningRepos, alert.Repository);
-                break;
-              case 'secret-scanning':
-                totalSecretScanning++;
-                if (alert['Secret Type']) {
-                  secretScanningByType[alert['Secret Type']] = 
-                    (secretScanningByType[alert['Secret Type']] || 0) + 1;
-                }
-                updateRepoBreakdown(secretScanningRepos, alert.Repository);
-                break;
-              case 'dependabot':
-                totalDependabot++;
-                dependabotAlerts[mappedSeverity]++;
-                updateRepoBreakdown(dependabotRepos, alert.Repository);
-                break;
               default:
-                console.warn('Unknown tool type:', alert.Tool);
+                // Any tool that's not secret-scanning or dependabot is treated as a code scanning tool
+                if (alert.Tool.toLowerCase() !== 'secret-scanning' && alert.Tool.toLowerCase() !== 'dependabot') {
+                  totalCodeScanning++;
+                  codeScanningAlerts[mappedSeverity]++;
+                  updateRepoBreakdown(codeScanningRepos, alert.Repository);
+                } else if (alert.Tool.toLowerCase() === 'secret-scanning') {
+                  totalSecretScanning++;
+                  if (alert['Secret Type']) {
+                    secretScanningByType[alert['Secret Type']] = 
+                      (secretScanningByType[alert['Secret Type']] || 0) + 1;
+                  }
+                  updateRepoBreakdown(secretScanningRepos, alert.Repository);
+                } else if (alert.Tool.toLowerCase() === 'dependabot') {
+                  totalDependabot++;
+                  dependabotAlerts[mappedSeverity]++;
+                  updateRepoBreakdown(dependabotRepos, alert.Repository);
+                }
+                break;
             }
           });
 
