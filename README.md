@@ -1,6 +1,6 @@
 # GitHub Advanced Security CSV to PDF Converter
 
-A web application that converts GitHub Advanced Security CSV exports into professional PDF reports. Easily transform your organization's security data into shareable, presentation-ready documents.
+A web application that converts GitHub Advanced Security CSV exports into PDF reports. Easily transform your organization's security data into shareable, presentation-ready documents.
 
 ## Features
 
