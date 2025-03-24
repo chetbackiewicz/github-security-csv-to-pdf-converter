@@ -11,7 +11,6 @@ import {
   FormControlLabel,
   Checkbox,
   Paper,
-  Divider,
   Grid,
   Radio,
   RadioGroup
