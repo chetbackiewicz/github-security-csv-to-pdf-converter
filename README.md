@@ -11,6 +11,7 @@ A web application that converts GitHub Advanced Security CSV exports into profes
   - Breakdown by alert type (Code Scanning, Dependabot, Secret Scanning)
   - Severity distribution visualizations
   - Repository-specific alert statistics
+- Choose which sections to include
 - Modern, clean user interface
 - Local processing (no data is sent to external servers)
 - Docker support for easy deployment
@@ -114,18 +115,31 @@ The built files will be in the `dist` directory and can be served with any stati
 1. Open the application in your browser
 2. Click the "Upload CSV File" button
 3. Select the CSV file you downloaded from GitHub
-4. Once processed, click the "Download PDF Report" button
-5. Save the generated PDF to your preferred location
+4. **Customize your report** by selecting which sections to include:
+   - **Code Scanning options**:
+     - Include all code scanning alerts
+     - Include alerts by repository
+     - Include only top 10 repositories by frequency
+   - **Dependabot options**:
+     - Include all Dependabot alerts
+     - Include alerts by repository
+     - Include only top 10 repositories by frequency
+   - **Secret Scanning options**:
+     - Include all Secret Scanning alerts
+     - Include top 10 secrets by frequency
+     - Include top 10 repositories by secret scanning alert frequency
+5. Click the "Download PDF Report" button
+6. Save the generated PDF to your preferred location
 
 ### PDF Report Contents
 
 The generated PDF includes:
 - Organization identification and report generation timestamp
 - Executive summary of all security alerts
-- Code scanning alerts breakdown by severity
-- Dependabot alerts breakdown by severity
-- Secret scanning alerts by type
-- Repository-specific alert distributions
+- Code scanning alerts breakdown by severity (if selected)
+- Dependabot alerts breakdown by severity (if selected)
+- Secret scanning alerts by type (if selected)
+- Repository-specific alert distributions (if selected)
 
 ## Technology Stack
 

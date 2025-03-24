@@ -32,6 +32,18 @@ export interface RepositoryBreakdown {
   alerts: number;
 }
 
+export interface ReportOptions {
+  includeCodeScanning: boolean;
+  includeCodeScanningByRepo: boolean;
+  includeTopCodeScanningRepos: boolean;
+  includeDependabot: boolean;
+  includeDependabotByRepo: boolean;
+  includeTopDependabotRepos: boolean;
+  includeSecretScanning: boolean;
+  includeSecretScanningByRepo: boolean;
+  includeTopSecretScanningRepos: boolean;
+}
+
 export interface ReportData {
   organization: string;
   timestamp: string;
