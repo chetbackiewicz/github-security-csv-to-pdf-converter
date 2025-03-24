@@ -20,6 +20,9 @@ jobs:
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
       
       - name: Log in to Azure
         uses: azure/login@v1
@@ -38,9 +41,13 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: |
+            ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+            ${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:latest
+          platforms: linux/amd64
+          provenance: false
+          cache-from: type=registry,ref=${{ env.CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:latest
+          cache-to: type=inline
       
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
