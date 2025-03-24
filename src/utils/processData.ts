@@ -10,9 +10,10 @@ const initializeSeverityCount = (): SeverityCount => ({
 
 const mapSeverity = (severity: string): keyof SeverityCount => {
   const sev = severity.toLowerCase();
-  if (sev === 'medium') return 'high';
-  if (sev === 'critical' || sev === 'high' || sev === 'low') return sev as keyof SeverityCount;
-  return 'low';
+  if (sev === 'critical' || sev === 'high' || sev === 'medium' || sev === 'low') {
+    return sev as keyof SeverityCount;
+  }
+  return 'low'; // Default to low for unknown severity levels
 };
 
 const getOrganizationFromRepo = (repoFullName: string): string => {
@@ -21,11 +22,23 @@ const getOrganizationFromRepo = (repoFullName: string): string => {
 };
 
 const updateRepoBreakdown = (
-  breakdown: Map<string, number>,
+  breakdown: Map<string, RepositoryBreakdown>,
   repoName: string,
+  severity: keyof SeverityCount,
   count: number = 1
 ) => {
-  breakdown.set(repoName, (breakdown.get(repoName) || 0) + count);
+  const repo = breakdown.get(repoName) || {
+    name: repoName,
+    alerts: 0,
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0
+  };
+  
+  repo.alerts += count;
+  repo[severity] += count;
+  breakdown.set(repoName, repo);
 };
 
 export const processCSVData = (file: File): Promise<ReportData> => {
@@ -34,7 +47,6 @@ export const processCSVData = (file: File): Promise<ReportData> => {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        console.log('CSV parsing complete:', results);
         if (results.errors.length > 0) {
           console.error('CSV parsing errors:', results.errors);
           reject(new Error('Failed to parse CSV file'));
@@ -54,9 +66,9 @@ export const processCSVData = (file: File): Promise<ReportData> => {
           const dependabotAlerts = initializeSeverityCount();
           const secretScanningByType: SecretTypeCount = {};
           
-          const codeScanningRepos = new Map<string, number>();
-          const dependabotRepos = new Map<string, number>();
-          const secretScanningRepos = new Map<string, number>();
+          const codeScanningRepos = new Map<string, RepositoryBreakdown>();
+          const dependabotRepos = new Map<string, RepositoryBreakdown>();
+          const secretScanningRepos = new Map<string, RepositoryBreakdown>();
           
           let totalCodeScanning = 0;
           let totalSecretScanning = 0;
@@ -77,26 +89,25 @@ export const processCSVData = (file: File): Promise<ReportData> => {
                 if (alert.Tool.toLowerCase() !== 'secret-scanning' && alert.Tool.toLowerCase() !== 'dependabot') {
                   totalCodeScanning++;
                   codeScanningAlerts[mappedSeverity]++;
-                  updateRepoBreakdown(codeScanningRepos, alert.Repository);
+                  updateRepoBreakdown(codeScanningRepos, alert.Repository, mappedSeverity);
                 } else if (alert.Tool.toLowerCase() === 'secret-scanning') {
                   totalSecretScanning++;
                   if (alert['Secret Type']) {
                     secretScanningByType[alert['Secret Type']] = 
                       (secretScanningByType[alert['Secret Type']] || 0) + 1;
                   }
-                  updateRepoBreakdown(secretScanningRepos, alert.Repository);
+                  updateRepoBreakdown(secretScanningRepos, alert.Repository, 'critical');
                 } else if (alert.Tool.toLowerCase() === 'dependabot') {
                   totalDependabot++;
                   dependabotAlerts[mappedSeverity]++;
-                  updateRepoBreakdown(dependabotRepos, alert.Repository);
+                  updateRepoBreakdown(dependabotRepos, alert.Repository, mappedSeverity);
                 }
                 break;
             }
           });
 
-          const mapToBreakdown = (map: Map<string, number>): RepositoryBreakdown[] => {
-            return Array.from(map.entries())
-              .map(([name, alerts]) => ({ name, alerts }))
+          const mapToBreakdown = (map: Map<string, RepositoryBreakdown>): RepositoryBreakdown[] => {
+            return Array.from(map.values())
               .sort((a, b) => b.alerts - a.alerts);
           };
 
@@ -104,9 +115,33 @@ export const processCSVData = (file: File): Promise<ReportData> => {
             organization,
             timestamp: new Date().toISOString(),
             alertSummary: [
-              { alertType: 'Code Scanning', total: totalCodeScanning, open: totalCodeScanning },
-              { alertType: 'Secret Scanning', total: totalSecretScanning, open: totalSecretScanning },
-              { alertType: 'Dependabot', total: totalDependabot, open: totalDependabot },
+              { 
+                alertType: 'Code Scanning', 
+                total: totalCodeScanning, 
+                open: totalCodeScanning,
+                critical: codeScanningAlerts.critical,
+                high: codeScanningAlerts.high,
+                medium: codeScanningAlerts.medium,
+                low: codeScanningAlerts.low
+              },
+              { 
+                alertType: 'Secret Scanning', 
+                total: totalSecretScanning, 
+                open: totalSecretScanning,
+                critical: totalSecretScanning,
+                high: 0,
+                medium: 0,
+                low: 0
+              },
+              { 
+                alertType: 'Dependabot', 
+                total: totalDependabot, 
+                open: totalDependabot,
+                critical: dependabotAlerts.critical,
+                high: dependabotAlerts.high,
+                medium: dependabotAlerts.medium,
+                low: dependabotAlerts.low
+              },
             ],
             codeScanningAlerts,
             dependabotAlerts,
@@ -116,7 +151,6 @@ export const processCSVData = (file: File): Promise<ReportData> => {
             secretScanningByRepo: mapToBreakdown(secretScanningRepos),
           };
 
-          console.log('Generated report data:', reportData);
           resolve(reportData);
         } catch (error) {
           console.error('Error processing CSV data:', error);

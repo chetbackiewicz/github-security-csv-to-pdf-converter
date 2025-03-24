@@ -14,6 +14,10 @@ export interface AlertSummary {
   alertType: string;
   total: number;
   open: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
 }
 
 export interface SeverityCount {
@@ -30,6 +34,10 @@ export interface SecretTypeCount {
 export interface RepositoryBreakdown {
   name: string;
   alerts: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
 }
 
 export interface ReportOptions {
