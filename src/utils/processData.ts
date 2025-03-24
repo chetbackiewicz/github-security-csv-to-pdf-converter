@@ -10,9 +10,10 @@ const initializeSeverityCount = (): SeverityCount => ({
 
 const mapSeverity = (severity: string): keyof SeverityCount => {
   const sev = severity.toLowerCase();
-  if (sev === 'medium') return 'high';
-  if (sev === 'critical' || sev === 'high' || sev === 'low') return sev as keyof SeverityCount;
-  return 'low';
+  if (sev === 'critical' || sev === 'high' || sev === 'medium' || sev === 'low') {
+    return sev as keyof SeverityCount;
+  }
+  return 'low'; // Default to low for unknown severity levels
 };
 
 const getOrganizationFromRepo = (repoFullName: string): string => {
