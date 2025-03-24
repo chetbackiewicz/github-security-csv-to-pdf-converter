@@ -22,6 +22,8 @@ import { ReportData, ReportOptions } from './types'
 import githubLogo from './assets/github-mark.svg'
 import './App.css'
 
+const SHOW_ALL_ALERTS_OPTIONS = false;
+
 const defaultOptions: ReportOptions = {
   includeCodeScanning: false,
   includeCodeScanningByRepo: true,
@@ -46,14 +48,11 @@ function App() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    console.log('File selected:', file.name)
     setLoading(true)
     setError(null)
 
     try {
-      console.log('Processing CSV file...')
       const data = await processCSVData(file)
-      console.log('CSV data processed:', data)
       setReportData(data)
     } catch (err) {
       console.error('Error details:', err)
@@ -154,15 +153,17 @@ function App() {
                     Code Scanning
                   </Typography>
                   <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox 
-                          checked={reportOptions.includeCodeScanning}
-                          onChange={handleOptionChange('includeCodeScanning')}
-                        />
-                      }
-                      label="Include All Code Scanning Alerts"
-                    />
+                    {SHOW_ALL_ALERTS_OPTIONS && (
+                      <FormControlLabel
+                        control={
+                          <Checkbox 
+                            checked={reportOptions.includeCodeScanning}
+                            onChange={handleOptionChange('includeCodeScanning')}
+                          />
+                        }
+                        label="Include All Code Scanning Alerts"
+                      />
+                    )}
                     <FormControlLabel
                       control={
                         <Checkbox 
@@ -176,18 +177,10 @@ function App() {
                       <RadioGroup
                         value={reportOptions.includeTopCodeScanningRepos ? 'top10' : 'all'}
                         onChange={handleRepoOptionChange('codeScanning')}
-                        sx={{ ml: 2 }}
+                        sx={{ ml: 3 }}
                       >
-                        <FormControlLabel
-                          value="all"
-                          control={<Radio />}
-                          label="All Alerts by Repository"
-                        />
-                        <FormControlLabel
-                          value="top10"
-                          control={<Radio />}
-                          label="Top 10 Repositories Only"
-                        />
+                        <FormControlLabel value="all" control={<Radio />} label="All Alerts by Repository" />
+                        <FormControlLabel value="top10" control={<Radio />} label="Top 10 Repositories Only" />
                       </RadioGroup>
                     )}
                   </FormGroup>
@@ -199,15 +192,17 @@ function App() {
                     Dependabot
                   </Typography>
                   <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox 
-                          checked={reportOptions.includeDependabot}
-                          onChange={handleOptionChange('includeDependabot')}
-                        />
-                      }
-                      label="Include All Dependabot Alerts"
-                    />
+                    {SHOW_ALL_ALERTS_OPTIONS && (
+                      <FormControlLabel
+                        control={
+                          <Checkbox 
+                            checked={reportOptions.includeDependabot}
+                            onChange={handleOptionChange('includeDependabot')}
+                          />
+                        }
+                        label="Include All Dependabot Alerts"
+                      />
+                    )}
                     <FormControlLabel
                       control={
                         <Checkbox 
@@ -221,18 +216,10 @@ function App() {
                       <RadioGroup
                         value={reportOptions.includeTopDependabotRepos ? 'top10' : 'all'}
                         onChange={handleRepoOptionChange('dependabot')}
-                        sx={{ ml: 2 }}
+                        sx={{ ml: 3 }}
                       >
-                        <FormControlLabel
-                          value="all"
-                          control={<Radio />}
-                          label="All Alerts by Repository"
-                        />
-                        <FormControlLabel
-                          value="top10"
-                          control={<Radio />}
-                          label="Top 10 Repositories Only"
-                        />
+                        <FormControlLabel value="all" control={<Radio />} label="All Alerts by Repository" />
+                        <FormControlLabel value="top10" control={<Radio />} label="Top 10 Repositories Only" />
                       </RadioGroup>
                     )}
                   </FormGroup>
@@ -244,15 +231,17 @@ function App() {
                     Secret Scanning
                   </Typography>
                   <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox 
-                          checked={reportOptions.includeSecretScanning}
-                          onChange={handleOptionChange('includeSecretScanning')}
-                        />
-                      }
-                      label="Include All Secret Scanning Alerts"
-                    />
+                    {SHOW_ALL_ALERTS_OPTIONS && (
+                      <FormControlLabel
+                        control={
+                          <Checkbox 
+                            checked={reportOptions.includeSecretScanning}
+                            onChange={handleOptionChange('includeSecretScanning')}
+                          />
+                        }
+                        label="Include All Secret Scanning Alerts"
+                      />
+                    )}
                     <FormControlLabel
                       control={
                         <Checkbox 
@@ -266,18 +255,10 @@ function App() {
                       <RadioGroup
                         value={reportOptions.includeTopSecretScanningRepos ? 'top10' : 'all'}
                         onChange={handleRepoOptionChange('secretScanning')}
-                        sx={{ ml: 2 }}
+                        sx={{ ml: 3 }}
                       >
-                        <FormControlLabel
-                          value="all"
-                          control={<Radio />}
-                          label="All Alerts by Repository"
-                        />
-                        <FormControlLabel
-                          value="top10"
-                          control={<Radio />}
-                          label="Top 10 Repositories Only"
-                        />
+                        <FormControlLabel value="all" control={<Radio />} label="All Alerts by Repository" />
+                        <FormControlLabel value="top10" control={<Radio />} label="Top 10 Repositories Only" />
                       </RadioGroup>
                     )}
                   </FormGroup>
