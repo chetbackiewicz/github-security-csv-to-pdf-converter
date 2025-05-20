@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+  workflow_dispatch:
 
 env:
   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
