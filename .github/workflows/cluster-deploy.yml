@@ -12,6 +12,10 @@ env:
   ECR_REPOSITORY: github_security_report
   AWS_REGION: ${{ secrets.AWS_REGION }}
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -24,11 +28,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
+    - name: Configure AWS credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: arn:aws:iam::852248767159:role/eksctl-clustertest-cluster-ServiceRole-NRUmY9qUsM5J
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
@@ -54,11 +57,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
+    - name: Configure AWS credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: arn:aws:iam::852248767159:role/eksctl-clustertest-cluster-ServiceRole-NRUmY9qUsM5J
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Install kubectl
