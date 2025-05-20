@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - 'main'
-      - 'staging/**'
+      - 'releases/**'
   workflow_dispatch:
 
 env:
@@ -16,6 +16,10 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     environment: production
+
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -32,6 +36,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build and push Docker image
+      id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.run_number }}
@@ -44,6 +49,7 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     environment: production
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -65,11 +71,15 @@ jobs:
       run: |
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
+    - name: Validate access to cluster
+      run: |
+        echo "Testing kubectl access..."
+        kubectl get nodes || exit 1
+
     - name: Deploy to EKS
       env:
         IMAGE: ${{ needs.build-and-push.outputs.image }}
       run: |
-        # Create a temporary deployment file
         cp ./deploy.yaml ./deploy.tmp.yaml
         sed -i "s|image: REPOSITORY_TAG|image: $IMAGE|g" ./deploy.tmp.yaml
         kubectl apply -f ./deploy.tmp.yaml
