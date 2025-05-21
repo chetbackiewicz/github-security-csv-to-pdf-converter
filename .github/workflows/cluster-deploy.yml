@@ -80,7 +80,8 @@ jobs:
         kubectl get nodes || exit 1
 
     - name: Echo image to be deployed
-      run: echo "Deploying image: ${{ needs.build-and-push.outputs.image }}"
+      run: |
+        echo "Deploying image: ${{ needs.build-and-push.outputs.image }}"
 
     - name: Deploy to EKS
       env:
