@@ -8,9 +8,10 @@ on:
   workflow_dispatch:
 
 env:
-  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
   ECR_REPOSITORY: github_security_report
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 
 permissions:
   id-token: write
@@ -71,12 +72,15 @@ jobs:
 
     - name: Configure kubectl
       run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+        aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
     - name: Validate access to cluster
       run: |
         echo "Testing kubectl access..."
         kubectl get nodes || exit 1
+
+    - name: Echo image to be deployed
+      run: echo "Deploying image: ${{ needs.build-and-push.outputs.image }}"
 
     - name: Deploy to EKS
       env:
