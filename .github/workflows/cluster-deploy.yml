@@ -23,9 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    outputs:
-      image: ${{ steps.build-image.outputs.image }}
-
     steps:
       - name: 📦 Checkout code
         uses: actions/checkout@v4
@@ -41,14 +38,20 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: 🐳 Build and push Docker image
-        id: build-image  # ✅ Needed for job output reference
+        id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.run_number }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" > image.txt
+
+      - name: 📤 Upload image reference as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: image-artifact
+          path: image.txt
 
   deploy:
     name: Deploy to EKS
@@ -81,13 +84,17 @@ jobs:
           echo "Checking EKS access..."
           kubectl get nodes
 
-      - name: 🧪 Print resolved image value (debug)
+      - name: 📥 Download image artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: image-artifact
+
+      - name: 🧪 Load image into environment
         run: |
-          echo "Resolved image: ${{ needs.build-and-push.outputs.image }}"
+          IMAGE=$(cat image.txt)
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
       - name: 🚀 Deploy to EKS
-        env:
-          IMAGE: ${{ needs.build-and-push.outputs.image }}
         run: |
           cp ./deploy.yaml ./deploy.tmp.yaml
           sed -i "s|image: REPOSITORY_TAG|image: $IMAGE|g" ./deploy.tmp.yaml
