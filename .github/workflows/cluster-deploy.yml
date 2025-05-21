@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   build-and-push:
+    name: Build and Push to ECR
     runs-on: ubuntu-latest
     environment: production
 
@@ -26,68 +27,69 @@ jobs:
       image: ${{ steps.build-image.outputs.image }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::852248767159:role/eksctl-clustertest-cluster-ServiceRole-NRUmY9qUsM5J
-        aws-region: ${{ env.AWS_REGION }}
+      - name: 🔐 Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::852248767159:role/eksctl-clustertest-cluster-ServiceRole-NRUmY9qUsM5J
+          aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: 🔑 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build and push Docker image
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.run_number }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      - name: 🐳 Build and push Docker image
+        id: build-image  # ✅ Needed for job output reference
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.run_number }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   deploy:
+    name: Deploy to EKS
     needs: build-and-push
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::852248767159:role/eksctl-clustertest-cluster-ServiceRole-NRUmY9qUsM5J
-        aws-region: ${{ env.AWS_REGION }}
+      - name: 🔐 Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::852248767159:role/eksctl-clustertest-cluster-ServiceRole-NRUmY9qUsM5J
+          aws-region: ${{ env.AWS_REGION }}
 
-    - name: Install kubectl
-      run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/
+      - name: 🛠️ Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
 
-    - name: Configure kubectl
-      run: |
-        aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+      - name: 🔧 Configure kubectl with EKS context
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
-    - name: Validate access to cluster
-      run: |
-        echo "Testing kubectl access..."
-        kubectl get nodes || exit 1
+      - name: 🔍 Validate kubectl access
+        run: |
+          echo "Checking EKS access..."
+          kubectl get nodes
 
-    - name: Echo image to be deployed
-      run: |
-        echo "Deploying image: ${{ needs.build-and-push.outputs.image }}"
+      - name: 🧪 Print resolved image value (debug)
+        run: |
+          echo "Resolved image: ${{ needs.build-and-push.outputs.image }}"
 
-    - name: Deploy to EKS
-      env:
-        IMAGE: ${{ needs.build-and-push.outputs.image }}
-      run: |
-        cp ./deploy.yaml ./deploy.tmp.yaml
-        sed -i "s|image: REPOSITORY_TAG|image: $IMAGE|g" ./deploy.tmp.yaml
-        kubectl apply -f ./deploy.tmp.yaml
-        rm ./deploy.tmp.yaml
+      - name: 🚀 Deploy to EKS
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image }}
+        run: |
+          cp ./deploy.yaml ./deploy.tmp.yaml
+          sed -i "s|image: REPOSITORY_TAG|image: $IMAGE|g" ./deploy.tmp.yaml
+          kubectl apply -f ./deploy.tmp.yaml
+          rm ./deploy.tmp.yaml
